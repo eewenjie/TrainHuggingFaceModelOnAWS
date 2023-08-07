@@ -45,13 +45,6 @@ if __name__ == "__main__":
     logger.info(f" loaded train_dataset length is: {len(train_dataset)}")
     logger.info(f" loaded test_dataset length is: {len(test_dataset)}")
 
-    # compute metrics function for binary classification
-    def compute_metrics(pred):
-        labels = pred.label_ids
-        preds = pred.predictions.argmax(-1)
-        precision, recall, f1, _ = precision_recall_fscore_support(labels, preds, average="binary")
-        acc = accuracy_score(labels, preds)
-        return {"accuracy": acc, "f1": f1, "precision": precision, "recall": recall}
 
     # download model from model hub
     model = AutoModelForSequenceClassification.from_pretrained(args.model_name,  num_labels=args.num_labels, problem_type="multi_label_classification")
@@ -73,7 +66,6 @@ if __name__ == "__main__":
     trainer = Trainer(
         model=model,
         args=training_args,
-        # compute_metrics=compute_metrics,
         train_dataset=train_dataset,
         eval_dataset=test_dataset,
         tokenizer=tokenizer,
