@@ -19,6 +19,7 @@ if __name__ == "__main__":
     parser.add_argument("--warmup_steps", type=int, default=500)
     parser.add_argument("--model_name", type=str)
     parser.add_argument("--learning_rate", type=str, default=5e-5)
+    parser.add_argument("--num_labels", type=int, default=6)
 
     # Data, model, and output directories
     parser.add_argument("--output_data_dir", type=str, default=os.environ["SM_OUTPUT_DATA_DIR"])
@@ -28,7 +29,6 @@ if __name__ == "__main__":
     parser.add_argument("--test_dir", type=str, default=os.environ["SM_CHANNEL_TEST"])
 
     args, _ = parser.parse_known_args()
-
     # Set up logging
     logger = logging.getLogger(__name__)
 
@@ -54,8 +54,8 @@ if __name__ == "__main__":
         return {"accuracy": acc, "f1": f1, "precision": precision, "recall": recall}
 
     # download model from model hub
-    model = AutoModelForSequenceClassification.from_pretrained(args.model_name)
-    tokenizer = AutoTokenizer.from_pretrained(args.model_name)
+    model = AutoModelForSequenceClassification.from_pretrained(args.model_name,  num_labels=args.num_labels, problem_type="multi_label_classification")
+    tokenizer = AutoTokenizer.from_pretrained(args.model_name, problem_type="multi_label_classification")
 
     # define training args
     training_args = TrainingArguments(
@@ -73,7 +73,7 @@ if __name__ == "__main__":
     trainer = Trainer(
         model=model,
         args=training_args,
-        compute_metrics=compute_metrics,
+        # compute_metrics=compute_metrics,
         train_dataset=train_dataset,
         eval_dataset=test_dataset,
         tokenizer=tokenizer,
